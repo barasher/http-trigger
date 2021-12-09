@@ -17,8 +17,8 @@ func TestExecHandler(t *testing.T) {
 		expReturnCode string
 		expBody       string
 	}{
-		{"ok", "../testdata/script_0.sh", "0", "here is the body (0)\n"},
-		{"ko", "../testdata/script_1.sh", "1", "here is the body (1)\n"},
+		{"ok", "../testdata/scripts/script_0.sh", "0", "here is the body (0)\n"},
+		{"ko", "../testdata/scripts/script_1.sh", "1", "here is the body (1)\n"},
 		{"not_found", "non_existing.sh", "-1", ""},
 	}
 
@@ -46,19 +46,32 @@ func TestExecHandler(t *testing.T) {
 	}
 }
 
-/*func TestLoadConf(t *testing.T) {
+func TestLoadConf(t *testing.T) {
+	nominalConf := ServerConf{
+		Port:     42,
+		Commands: map[string]string{"cmdKey1": "cmd1", "cmdKey2": "cmd2"},
+	}
+
 	var tcs = []struct {
-		cmdKey        string
-		cmd           string
-		expReturnCode string
+		id      string
+		inFile  string
+		expIsOk bool
+		expConf ServerConf
 	}{
-		{"ok", "../testdata/script_0.sh", "0"},
-		{"ko", "../testdata/script_1.sh", "1"},
-		{"not_found", "non_existing.sh", "-1"},
+		{"nominal", "../testdata/conf/nominal.json", true, nominalConf},
+		{"nonExisting", "nonExisting.json", false, ServerConf{}},
+		{"unparsable", "../testdata/conf/unparsable.json", false, ServerConf{}},
 	}
 
 	for _, tc := range tcs {
-		t.Run(tc.cmdKey, func(t *testing.T) {
-		}
+		t.Run(tc.id, func(t *testing.T) {
+			c, err := LoadConfiguration(tc.inFile)
+			if tc.expIsOk {
+				assert.Nil(t, err)
+				assert.Equal(t, tc.expConf, c)
+			} else {
+				assert.NotNil(t, err)
+			}
+		})
 	}
-}*/
+}

@@ -1,0 +1,7 @@
+{
+    "port":42,
+    "commands": {
+        "cmdKey1":"cmd1",
+        "cmdKey2":"cmd2"
+    }
+}

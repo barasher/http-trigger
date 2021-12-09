@@ -1,8 +1,10 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
 	"strconv"
 	"time"
@@ -22,15 +24,24 @@ const (
 )
 
 type ServerConf struct {
-	port     uint
-	commands map[string]string
+	Port     uint              `json:"port"`
+	Commands map[string]string `json:"commands"`
 }
 
 func LoadConfiguration(f string) (ServerConf, error) {
-	sc := ServerConf{
-		commands: make(map[string]string),
+	conf := ServerConf{
+		Commands: make(map[string]string),
 	}
-	return sc, nil
+	confReader, err := os.Open(f)
+	if err != nil {
+		return conf, fmt.Errorf("error while opening configuration file %v: %w", f, err)
+	}
+	defer confReader.Close()
+	err = json.NewDecoder(confReader).Decode(&conf)
+	if err != nil {
+		return conf, fmt.Errorf("error while unmarshaling configuration file %v: %w", f, err)
+	}
+	return conf, nil
 }
 
 type Server struct {
@@ -71,11 +82,11 @@ func (h execHandler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 
 func NewServer(conf ServerConf) (*Server, error) {
 	s := Server{
-		port: conf.port,
+		port: conf.Port,
 	}
 	s.router = mux.NewRouter()
 
-	for cmdKey, cmd := range conf.commands {
+	for cmdKey, cmd := range conf.Commands {
 		cK := cmdKey
 		c := cmd
 		histoDur := prometheus.NewHistogramVec(
