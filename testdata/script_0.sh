@@ -1,3 +1,3 @@
 #! /bin/sh
-echo "here is the body"
+echo "here is the body (0)"
 return 0

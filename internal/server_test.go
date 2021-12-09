@@ -15,10 +15,11 @@ func TestExecHandler(t *testing.T) {
 		cmdKey        string
 		cmd           string
 		expReturnCode string
+		expBody       string
 	}{
-		{"ok", "../testdata/script_0.sh", "0"},
-		{"ko", "../testdata/script_1.sh", "1"},
-		{"not_found", "non_existing.sh", "-1"},
+		{"ok", "../testdata/script_0.sh", "0", "here is the body (0)\n"},
+		{"ko", "../testdata/script_1.sh", "1", "here is the body (1)\n"},
+		{"not_found", "non_existing.sh", "-1", ""},
 	}
 
 	for _, tc := range tcs {
@@ -40,6 +41,24 @@ func TestExecHandler(t *testing.T) {
 			assert.Equal(t, 200, rr.Code)
 			assert.Equal(t, tc.expReturnCode, rr.HeaderMap.Get(headerExitCode))
 			assert.NotEqual(t, "", rr.HeaderMap.Get(headerDuration))
+			assert.Equal(t, tc.expBody, rr.Body.String())
 		})
 	}
 }
+
+/*func TestLoadConf(t *testing.T) {
+	var tcs = []struct {
+		cmdKey        string
+		cmd           string
+		expReturnCode string
+	}{
+		{"ok", "../testdata/script_0.sh", "0"},
+		{"ko", "../testdata/script_1.sh", "1"},
+		{"not_found", "non_existing.sh", "-1"},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.cmdKey, func(t *testing.T) {
+		}
+	}
+}*/
