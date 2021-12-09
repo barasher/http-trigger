@@ -106,3 +106,21 @@ func NewServer(conf ServerConf) (*Server, error) {
 
 	return &s, nil
 }
+
+func (s *Server) Run() {
+	p := s.port
+	if p == 0 {
+		p = 8080
+		log.Info().Msgf("Default port will be used (%v)", p)
+	}
+	addr := fmt.Sprintf("0.0.0.0:%v", p)
+	srv := &http.Server{
+		Addr:         addr,
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      s.router,
+	}
+	log.Info().Msg("Server running...")
+	srv.ListenAndServe()
+}
