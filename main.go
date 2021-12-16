@@ -45,6 +45,5 @@ func startServer(confFile string) error {
 		return err
 	}
 
-	s.Run()
-	return nil
+	return s.Run()
 }

@@ -76,7 +76,6 @@ func (h execHandler) ServeHTTP(w http.ResponseWriter, _ *http.Request) {
 	duration := time.Now().Sub(start).Milliseconds()
 	w.Header().Add(headerDuration, strconv.Itoa(int(duration)))
 	w.Header().Add(headerExitCode, exitCode)
-	w.WriteHeader(http.StatusOK)
 	l.Info().Int64("duration", duration).Str("state", state).Msg("Invocation complete")
 }
 
@@ -98,8 +97,9 @@ func NewServer(conf ServerConf) (*Server, error) {
 			[]string{},
 		)
 		prometheus.Unregister(histoDur)
+		prometheus.MustRegister(histoDur)
 		h := promhttp.InstrumentHandlerDuration(histoDur, execHandler{cmdKey: cK, cmd: c})
-		s.router.HandleFunc(fmt.Sprintf("/exec/{%v}", cK), h).Methods(http.MethodPost)
+		s.router.HandleFunc(fmt.Sprintf("/exec/%v", cK), h).Methods(http.MethodPost)
 	}
 
 	s.router.Handle("/metrics", promhttp.Handler())
@@ -107,7 +107,7 @@ func NewServer(conf ServerConf) (*Server, error) {
 	return &s, nil
 }
 
-func (s *Server) Run() {
+func (s *Server) Run() error {
 	p := s.port
 	if p == 0 {
 		p = 8080
@@ -122,5 +122,5 @@ func (s *Server) Run() {
 		Handler:      s.router,
 	}
 	log.Info().Msg("Server running...")
-	srv.ListenAndServe()
+	return srv.ListenAndServe()
 }
